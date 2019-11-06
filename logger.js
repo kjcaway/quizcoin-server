@@ -10,7 +10,7 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
 
 const options = {
   file: {
-    level: 'info',
+    level: 'warn',
     filename: `${appRoot}/logs/express_server.log`,
     handleExceptions: true,
     json: false,

@@ -1,14 +1,17 @@
 const express = require("express");
-const db = require("../db");
 const _ = require('lodash');
 const crypto = require('crypto');
 const moment = require('moment');
+const db = require("../db");
 const config = require('../config/config')
 const logger = require('../logger');
-const { user } = require('../queries')
+const { user } = require('../queries');
 
 const router = express.Router();
 
+/**
+ * 사용자 조회
+ */
 router.get("/", (req, res, next) => {
   db((err, connection) => {
     connection.query(user.selectUser(), (err, rows) => {
@@ -22,9 +25,19 @@ router.get("/", (req, res, next) => {
   });
 });
 
+/**
+ * 사용자 입력
+ */
 router.post("/", (req, res, next) => {
+  const {userId, password, name, profile} = req.body;
+
+  if(userId === undefined || password === undefined || name === undefined){
+    return res.status(400).json({
+      message : 'Bad request'
+    });
+  }
+
   db((err, connection) => {
-    const {userId, password, name, profile} = req.body;
     const cipher = crypto.createCipher('aes-256-cbc', config.passwordKey);
     let result = cipher.update(password, 'utf8', 'base64')
     result += cipher.final('base64');
@@ -38,23 +51,32 @@ router.post("/", (req, res, next) => {
       lastlogin_time: ''
     }
 
-    let query =connection.query(user.insertUser(data), (err, results, fields) => {
+    let query = connection.query(user.insertUser(data), (err, results, fields) => {
       connection.release();
       if (err) {
         return next(err);
       }
 
-      return res.json({ results: results });
+      return res.json({ results });
     });
 
     logger.debug('Execute query.\n\n\t\t' + query.sql + '\n');
   });
 });
 
-
+/**
+ * 사용자 로그인
+ */
 router.post("/signin", (req, res, next) => {
+  const {userId, password} = req.body;
+
+  if(userId === undefined || password === undefined){
+    return res.status(400).json({
+      message : 'Bad request'
+    });
+  }
+
   db((err, connection) => {
-    const {userId, password} = req.body;
 
     let query = connection.query(user.selectUser(userId), (err, results, fields) => {
       connection.release();
