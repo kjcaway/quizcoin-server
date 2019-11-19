@@ -70,32 +70,34 @@ router.post("/", (req, res, next) => {
 router.post("/signin", (req, res, next) => {
   const {userId, password} = req.body;
 
-  if(userId === undefined || password === undefined){
+  if(_.isEmpty(userId) || _.isEmpty(password)){
     return res.status(400).json({
       message : 'Bad request'
     });
+  } else{
+    db((err, connection) => {
+  
+      let query = connection.query(user.selectUser(userId), (err, results, fields) => {
+        connection.release();
+        if (err) {
+          return next(err);
+        }
+        const resPass = results[0].password
+        const decipher = crypto.createDecipher('aes-256-cbc', config.passwordKey);
+        let result = decipher.update(resPass, 'base64', 'utf8');
+        result += decipher.final('utf8');
+  
+        if(result === password){
+          return res.json({ status: 'Success' });
+        }else {
+          return res.status(401).json({ status: 'Fail' });
+          
+        }
+      });
+    })
+
   }
 
-  db((err, connection) => {
-
-    let query = connection.query(user.selectUser(userId), (err, results, fields) => {
-      connection.release();
-      if (err) {
-        return next(err);
-      }
-      const resPass = results[0].password
-      const decipher = crypto.createDecipher('aes-256-cbc', config.passwordKey);
-      let result = decipher.update(resPass, 'base64', 'utf8');
-      result += decipher.final('utf8');
-
-      if(result === password){
-        return res.json({ status: 'Success' });
-      }else {
-        return res.json({ status: 'Fail' });
-        
-      }
-    });
-  })
 })
 
 module.exports = router;
