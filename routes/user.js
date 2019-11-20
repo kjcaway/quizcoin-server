@@ -89,26 +89,30 @@ router.post("/signin", (req, res, next) => {
           return next(err);
         }
 
-        if (_.isEmpty(results)) {
-          return res.status(401).json({
-            message: "Wrong userid"
-          });
-        }
-        const resPass = results[0].password;
-        const decipher = crypto.createDecipher(
-          "aes-256-cbc",
-          config.passwordKey
-        );
-        let decipherResPass = decipher.update(resPass, "base64", "utf8");
-        decipherResPass += decipher.final("utf8");
+        try {
+          if (_.isEmpty(results)) {
+            return res.status(401).json({
+              message: "Wrong userid"
+            });
+          }
+          const resPass = results[0].password;
+          const decipher = crypto.createDecipher(
+            "aes-256-cbc",
+            config.passwordKey
+          );
+          let decipherResPass = decipher.update(resPass, "base64", "utf8");
+          decipherResPass += decipher.final("utf8");
 
-        if (decipherResPass === password) {
-          return res.json({
-            status: "Success",
-            token: getToken(results[0].user_id)
-          });
-        } else {
-          return res.status(401).json({ message: "Wrong password" });
+          if (decipherResPass === password) {
+            return res.json({
+              status: "Success",
+              token: getToken(results[0].user_id)
+            });
+          } else {
+            return res.status(401).json({ message: "Wrong password" });
+          }
+        } catch (error) {
+          return next(error)
         }
       }
     );

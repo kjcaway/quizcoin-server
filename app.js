@@ -5,6 +5,7 @@ const cors = require('cors');
 const api = require('./routes/index');
 const logger = require('./logger')
 
+
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }))
 app.use(cors());
