@@ -29,10 +29,10 @@ router.get("/", (req, res, next) => {
 /**
  * 사용자 입력
  */
-router.post("/", (req, res, next) => {
-  const { userId, password, name, profile } = req.body;
+router.post("/signup", (req, res, next) => {
+  const { userId, password, userName, profile } = req.body;
 
-  if (userId === undefined || password === undefined || name === undefined) {
+  if (_.isEmpty(userId) || _.isEmpty(password) || _.isEmpty(userName)) {
     return res.status(400).json({
       message: "Bad request"
     });
@@ -45,9 +45,9 @@ router.post("/", (req, res, next) => {
 
     const data = {
       user_id: userId,
-      name: name,
+      name: userName,
       password: result,
-      profile: profile,
+      profile: profile || '',
       created_time: moment().format("YYYY-MM-DD HH:mm:ss"),
       lastlogin_time: ""
     };
@@ -60,7 +60,9 @@ router.post("/", (req, res, next) => {
           return next(err);
         }
 
-        return res.json({ results });
+        return res.json({
+          status: "Success",
+        });
       }
     );
 
@@ -117,6 +119,14 @@ router.post("/signin", (req, res, next) => {
       }
     );
   });
+});
+
+/**
+ * 토큰 체크
+ */
+router.post("/checkToken", (req, res, next) => {
+  const { userId, password } = req.body;
+
 });
 
 module.exports = router;
