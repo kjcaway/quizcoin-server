@@ -7,6 +7,7 @@ const config = require("../config/config");
 const logger = require("../logger");
 const { user } = require("../queries");
 const { getToken } = require("../lib/jwt");
+const jwt = require('jsonwebtoken')
 
 const router = express.Router();
 
@@ -125,8 +126,22 @@ router.post("/signin", (req, res, next) => {
  * 토큰 체크
  */
 router.post("/checkToken", (req, res, next) => {
-  const { userId, password } = req.body;
-
+  try {
+    const token = req.header('Authorization');
+    if(!token){
+      return res.status(401).json({ message: "Empty token"});
+    }
+  
+    const decodedToken = jwt.verify(token, config.jwt.secret);
+  
+    if(decodedToken){
+      return res.json({message: 'Valid token'});
+    } else {
+      return res.status(401).json({message: "Invalid token"});
+    }
+  } catch (error) {
+    return res.status(401).json({message: error.name});
+  }
 });
 
 module.exports = router;
