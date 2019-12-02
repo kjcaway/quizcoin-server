@@ -14,9 +14,17 @@ const router = express.Router();
 /**
  * 사용자 조회
  */
-router.get('/', (req, res, next) => {
+router.post('/', (req, res, next) => {
+  const { userId } = req.body;
+
+  if (_.isEmpty(userId)) {
+    return res.status(400).json({
+      message: 'Bad request'
+    });
+  }
+
   db((err, connection) => {
-    connection.query(user.selectUser(), (err, rows) => {
+    connection.query(user.selectUser(userId), (err, rows) => {
       connection.release();
       if (err) {
         return next(err);

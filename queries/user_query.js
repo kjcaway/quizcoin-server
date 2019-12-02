@@ -1,11 +1,34 @@
 function selectUser(userId = '') {
   if (userId) {
     return `
-      SELECT * FROM USER WHERE user_id = '${userId}'
+      SELECT 
+          US.user_id, 
+          US.name, 
+          US.profile, 
+          US.created_time, 
+          US.lastlogin_time,
+          ifnull(SC.score, 0) as score,
+          ifnull(SC.popular, 0) as popular,
+          (select count(*) from QUIZ where user_id = US.user_id) as quizcnt,
+          ifnull((select group_concat(tag_name SEPARATOR ',') from TAGS where user_id = US.user_id group by user_id), '') as tags
+      FROM
+          USER US LEFT OUTER JOIN SCORE SC ON SC.user_id = US.user_id
+      WHERE US.user_id = '${userId}'
     `;
   } else {
     return `
-      SELECT user_id, name, profile, created_time, lastlogin_time FROM USER 
+      SELECT 
+          US.user_id, 
+          US.name, 
+          US.profile, 
+          US.created_time, 
+          US.lastlogin_time,
+          ifnull(SC.score, 0) as score,
+          ifnull(SC.popular, 0) as popular,
+          (select count(*) from QUIZ where user_id = US.user_id) as quizcnt,
+          ifnull((select group_concat(tag_name SEPARATOR ',') from TAGS where user_id = US.user_id group by user_id), '') as tags
+      FROM
+          USER US LEFT OUTER JOIN SCORE SC ON SC.user_id = US.user_id
     `;
   }
 }
