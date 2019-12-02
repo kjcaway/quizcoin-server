@@ -1,4 +1,4 @@
-function selectUser(userId = "") {
+function selectUser(userId = '') {
   if (userId) {
     return `
       SELECT * FROM USER WHERE user_id = '${userId}'

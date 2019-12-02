@@ -4,4 +4,4 @@ const quiz = require('./quiz_query');
 module.exports = {
   user,
   quiz
-}
+};
