@@ -30,7 +30,7 @@ router.post('/', (req, res, next) => {
         return next(err);
       }
 
-      return res.json({ data: rows });
+      return res.json(rows);
     });
   });
 });
