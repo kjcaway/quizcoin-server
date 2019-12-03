@@ -3,6 +3,7 @@ function selectUser(userId = '') {
     return `
       SELECT 
           US.user_id, 
+          US.password,
           US.name, 
           US.profile, 
           US.created_time, 

@@ -14,7 +14,7 @@ app.use('/api', api);
 
 // error handler
 app.use(function(err, req, res, next) {
-  logger.error(`${err}`);
+  logger.error(`${err.stack}`);
   return res.status(500).json({ error: 1, message: 'Internal Server Error.' });
 });
 
