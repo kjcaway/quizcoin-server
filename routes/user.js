@@ -5,7 +5,7 @@ const moment = require('moment');
 const db = require('../db');
 const config = require('../config/config');
 const logger = require('../logger');
-const { user } = require('../queries');
+const { user, tags } = require('../queries');
 const { getToken } = require('../lib/jwt');
 const jwt = require('jsonwebtoken');
 
@@ -70,7 +70,7 @@ router.post('/signup', (req, res, next) => {
         }
 
         return res.json({
-          status: 'Success'
+          success: true
         });
       }
     );
@@ -134,22 +134,48 @@ router.post('/signin', (req, res, next) => {
  * 토큰 체크
  */
 router.post('/checkToken', (req, res, next) => {
-  try {
-    const token = req.header('Authorization');
-    if (!token) {
-      return res.status(401).json({ message: 'Empty token' });
-    }
-
-    const decodedToken = jwt.verify(token, config.jwt.secret);
-
-    if (decodedToken) {
-      return res.json({ message: 'Valid token' });
-    } else {
-      return res.status(401).json({ message: 'Invalid token' });
-    }
-  } catch (error) {
-    return res.status(401).json({ message: error.name });
-  }
+  return res.json({
+    success: true,
+    tokenInfo: req.decoded
+  });
 });
 
+/**
+ * 태그입력
+ */
+router.post('/tag', (req, res, next) => {
+  const { tagName } = req.body;
+  const userId = req.decoded.userId;
+  if (_.isEmpty(tagName)) {
+    return res.status(400).json({
+      message: 'Bad request'
+    });
+  }
+  if (_.isEmpty(userId)) {
+    return res.status(401).json({
+      message: 'Not logged'
+    });
+  }
+
+  db((err, connection) => {
+    const data = {
+      user_id: userId,
+      tag_name: _.trim(tagName),
+      created_time: moment().format('YYYY-MM-DD HH:mm:ss')
+    };
+    let query = connection.query(
+      tags.insertTag(data),
+      (err, results, fields) => {
+        connection.release();
+        if (err) {
+          return next(err);
+        }
+
+        return res.json({
+          success: true
+        });
+      }
+    );
+  });
+});
 module.exports = router;

@@ -13,16 +13,16 @@ const router = express.Router();
  * 퀴즈 조회
  */
 router.post('/list', (req, res, next) => {
-  const qWhere = req.body;
+  const queryJson = req.body;
 
   db((err, connection) => {
-    let query = connection.query(quiz.selectQuiz(qWhere), (err, rows) => {
+    let query = connection.query(quiz.selectQuiz(queryJson), (err, rows) => {
       connection.release();
       if (err) {
         return next(err);
       }
 
-      return res.json({ data: rows });
+      return res.json(rows);
     });
 
     logger.debug('Execute query.\n\n\t\t' + query.sql + '\n');
