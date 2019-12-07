@@ -117,7 +117,8 @@ router.post('/signin', (req, res, next) => {
           if (decipherResPass === password) {
             return res.json({
               status: 'Success',
-              token: getToken(results[0].user_id)
+              token: getToken(results[0].user_id),
+              userId: userId
             });
           } else {
             return res.status(401).json({ message: 'Wrong password' });
