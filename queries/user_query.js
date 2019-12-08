@@ -27,7 +27,7 @@ function selectUser(userId = '') {
           ifnull(SC.score, 0) as score,
           ifnull(SC.popular, 0) as popular,
           (select count(*) from QUIZ where user_id = US.user_id) as quizcnt,
-          ifnull((select group_concat(tag_name SEPARATOR ',') from TAGS where user_id = US.user_id order by created_time desc group by user_id), '') as tags
+          ifnull((select group_concat(tag_name SEPARATOR ',') from TAGS where user_id = US.user_id group by user_id), '') as tags
       FROM
           USER US LEFT OUTER JOIN SCORE SC ON SC.user_id = US.user_id
     `;

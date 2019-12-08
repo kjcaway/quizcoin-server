@@ -179,4 +179,29 @@ router.post('/tag', (req, res, next) => {
     );
   });
 });
+
+/**
+ * 사용자 리스트 조회
+ */
+router.post('/list', (req, res, next) => {
+  const { limit, offset } = req.body;
+
+  if (limit < 0 || offset < 0) {
+    return res.status(400).json({
+      message: 'Bad request'
+    });
+  }
+
+  db((err, connection) => {
+    connection.query(user.selectUser(), (err, rows) => {
+      connection.release();
+      if (err) {
+        return next(err);
+      }
+
+      return res.json(rows);
+    });
+  });
+});
+
 module.exports = router;
