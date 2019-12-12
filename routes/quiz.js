@@ -32,15 +32,16 @@ router.post('/list', (req, res, next) => {
 /**
  * 퀴즈 생성
  */
-router.post('/write', (req, res, next) => {
-  const { userId, question, answer, question_type } = req.body;
-
+router.post('/create', (req, res, next) => {
+  const { question, answer, questionType } = req.body;
+  const userId = req.decoded.userId;
+  
   db((err, connection) => {
     const data = {
       user_id: userId,
       question: question,
       answer: answer,
-      question_type: question_type,
+      question_type: questionType,
       del_yn: 'N',
       created_time: moment().format('YYYY-MM-DD HH:mm:ss')
     };
