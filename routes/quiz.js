@@ -27,7 +27,7 @@ router.post('/list', async (req, res, next) => {
  * 퀴즈 생성
  */
 router.post('/create', async (req, res, next) => {
-  const { question, answer, questionType } = req.body;
+  const { question, answer, questionType, multiAnswerItems } = req.body;
   const userId = req.decoded.userId;
   
   const connection = await getConn();
@@ -41,10 +41,20 @@ router.post('/create', async (req, res, next) => {
       created_time: moment().format('YYYY-MM-DD HH:mm:ss')
     };
     await connection.beginTransaction();
-    await connection.query(quiz.insertQuiz(data));
-    await connection.commit(); 
+    const [results] = await connection.query(quiz.insertQuiz(data));
+    if(questionType === 1){
+      // 객관식
+      const quizId = results.insertId;
+      multiAnswerItems.forEach(async (item) => {
+        const itemData = {
+          quiz_id : quizId,
+          item: item
+        }
+        await connection.query(quiz.insertQuizItem(itemData));
+      })
+    }
+    await connection.commit();
     connection.release();
-
     return res.json({
       success: true
     });

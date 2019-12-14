@@ -164,6 +164,44 @@ router.post('/tag', async (req, res, next) => {
 });
 
 /**
+ * 태그 삭제
+ */
+router.post('/removeTag', async (req, res, next) => {
+  const { tagName } = req.body;
+  const userId = req.decoded.userId;
+  if (_.isEmpty(tagName)) {
+    return res.status(400).json({
+      message: 'Bad request'
+    });
+  }
+  if (_.isEmpty(userId)) {
+    return res.status(401).json({
+      message: 'Not logged'
+    });
+  }
+
+  const connection = await getConn();
+  try {
+    const data = {
+      user_id: userId,
+      tag_name: _.trim(tagName),
+    };
+    await connection.beginTransaction();
+    await connection.query(tags.deleteTag(data));
+    await connection.commit(); 
+    connection.release();
+
+    return res.json({
+      success: true
+    });
+  } catch (err) {
+    await connection.rollback(); 
+    connection.release();
+    return next(err);
+  }
+});
+
+/**
  * 사용자 리스트 조회
  */
 router.post('/list', async (req, res, next) => {

@@ -5,6 +5,13 @@ function insertTag(data) {
   `;
 }
 
+function deleteTag(data) {
+  return `
+  DELETE FROM TAGS WHERE user_id = '${data.user_id}' AND tag_name = '${data.tag_name}'
+  `;
+}
+
 module.exports = {
   insertTag,
+  deleteTag
 };
