@@ -29,7 +29,15 @@ function insertQuiz(data) {
   `;
 }
 
+function insertQuizItem(data) {
+  return `
+  INSERT INTO QUIZ_ITEM (quiz_id, item)
+  VALUES ('${data.quiz_id}', '${data.item}')
+  `;
+}
+
 module.exports = {
   selectQuiz,
-  insertQuiz
+  insertQuiz,
+  insertQuizItem
 };

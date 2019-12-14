@@ -1,9 +1,7 @@
 const express = require('express');
 const _ = require('lodash');
-const crypto = require('crypto');
 const moment = require('moment');
-const db = require('../db');
-const config = require('../config/config');
+const getConn = require('../db');
 const logger = require('../logger');
 const { quiz } = require('../queries');
 
@@ -12,31 +10,28 @@ const router = express.Router();
 /**
  * 퀴즈 조회
  */
-router.post('/list', (req, res, next) => {
+router.post('/list', async (req, res, next) => {
   const queryJson = req.body;
-
-  db((err, connection) => {
-    let query = connection.query(quiz.selectQuiz(queryJson), (err, rows) => {
-      connection.release();
-      if (err) {
-        return next(err);
-      }
-
-      return res.json(rows);
-    });
-
-    logger.debug('Execute query.\n\n\t\t' + query.sql + '\n');
-  });
+  const connection = await getConn();
+  try {
+    const [rows] = await connection.query(selectQuiz(queryJson));
+    connection.release();
+    return res.json(rows);
+  } catch (err) {
+    connection.release();
+    return next(err);
+  }
 });
 
 /**
  * 퀴즈 생성
  */
-router.post('/create', (req, res, next) => {
+router.post('/create', async (req, res, next) => {
   const { question, answer, questionType } = req.body;
   const userId = req.decoded.userId;
   
-  db((err, connection) => {
+  const connection = await getConn();
+  try {
     const data = {
       user_id: userId,
       question: question,
@@ -45,18 +40,20 @@ router.post('/create', (req, res, next) => {
       del_yn: 'N',
       created_time: moment().format('YYYY-MM-DD HH:mm:ss')
     };
+    await connection.beginTransaction();
+    await connection.query(quiz.insertQuiz(data));
+    await connection.commit(); 
+    connection.release();
 
-    let query = connection.query(quiz.insertQuiz(data), (err, results) => {
-      connection.release();
-      if (err) {
-        return next(err);
-      }
-
-      return res.json({ results });
+    return res.json({
+      success: true
     });
+  } catch (err) {
+    await connection.rollback(); 
+    connection.release();
+    return next(err);
+  }
 
-    logger.debug('Execute query.\n\n\t\t' + query.sql + '\n');
-  });
 });
 
 module.exports = router;

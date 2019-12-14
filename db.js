@@ -1,4 +1,4 @@
-const mysql = require('mysql');
+const mysql = require('mysql2/promise'); // async await 사용을 위한 mysql -> mysql2/promise 로 변경 
 const config = require('./config/config');
 const logger = require('./logger');
 
@@ -17,10 +17,8 @@ pool.on('release', function(connection) {
   logger.info(`Connection ${connection.threadId} released`);
 });
 
-const getConn = function(callback) {
-  pool.getConnection(function(err, connection) {
-    callback(err, connection);
-  });
+const getConn = async function() {
+  return await pool.getConnection(async conn => conn)
 };
 
 module.exports = getConn;
