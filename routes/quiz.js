@@ -11,10 +11,10 @@ const router = express.Router();
  * 퀴즈 조회
  */
 router.post('/list', async (req, res, next) => {
-  const queryJson = req.body;
+  const { userId } = req.body;
   const connection = await getConn();
   try {
-    const [rows] = await connection.query(selectQuiz(queryJson));
+    const [rows] = await connection.query(quiz.selectQuiz(userId));
     connection.release();
     return res.json(rows);
   } catch (err) {
