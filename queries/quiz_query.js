@@ -19,6 +19,8 @@ function selectQuiz(userId) {
     ifnull((select group_concat(item SEPARATOR ',') from QUIZ_ITEM where quiz_id = Q.quiz_id group by quiz_id), '') as items
   FROM
     QUIZ Q WHERE 1=1 AND user_id = '${userId}'
+  ORDER BY 
+    created_time desc
   `;
 }
 
