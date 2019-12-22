@@ -6,6 +6,9 @@ const getConn = require('../db');
 const config = require('../config/config');
 const { user, tags } = require('../queries');
 const { getToken } = require('../lib/jwt');
+const upload = require('../lib/fileupload');
+const multer = require('multer');
+const logger = require('../logger');
 
 const router = express.Router();
 
@@ -222,5 +225,36 @@ router.post('/list', async (req, res, next) => {
     return next(err);
   }
 });
+
+/**
+ * 사용자 프로필 이미지 변경
+ */
+router.post('/profile', async (req, res, next) => {
+  const connection = await getConn();
+  try {
+    await connection.beginTransaction();
+    upload(req, res, async function(err) {
+      const userId = req.decoded.userId;
+      if (err instanceof multer.MulterError) {
+        return next(err);
+      } else if (err) {
+        return next(err);
+      }
+      const file_path = _.get(req, 'file.location', null);
+      logger.info(`${userId} update profile.`)
+      await connection.query(user.updateProfile(file_path, userId));
+    });
+    await connection.commit(); 
+    connection.release();
+
+    return res.json({
+      success: true
+    });
+  } catch (err) {
+    await connection.rollback(); 
+    connection.release();
+    return next(err);
+  }
+})
 
 module.exports = router;

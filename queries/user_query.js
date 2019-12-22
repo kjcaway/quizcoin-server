@@ -42,7 +42,13 @@ function insertUser(data) {
   `;
 }
 
+function updateProfile(file_path, user_id) {
+  return `
+    UPDATE USER SET profile = '${file_path}' WHERE user_id = '${user_id}'
+  `
+}
 module.exports = {
   selectUser,
-  insertUser
+  insertUser,
+  updateProfile
 };
