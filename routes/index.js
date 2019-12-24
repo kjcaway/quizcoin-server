@@ -10,6 +10,7 @@ router.use('/user/tag', authMiddleware);
 router.use('/user/removeTag', authMiddleware);
 router.use('/user/profile', authMiddleware);
 router.use('/quiz/create', authMiddleware);
+router.use('/quiz/mylist', authMiddleware);
 
 router.use('/user', user);
 router.use('/quiz', quiz);

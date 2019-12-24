@@ -8,10 +8,33 @@ const { quiz } = require('../queries');
 const router = express.Router();
 
 /**
- * 퀴즈 조회
+ * 퀴즈 조회 (own)
+ */
+router.post('/mylist', async (req, res, next) => {
+  const userId = req.decoded.userId;
+  const connection = await getConn();
+  try {
+    const [rows] = await connection.query(quiz.selectQuizWithAnswer(userId));
+    connection.release();
+    return res.json(rows);
+  } catch (err) {
+    connection.release();
+    return next(err);
+  }
+});
+
+/**
+ * 최근 퀴즈 조회
  */
 router.post('/list', async (req, res, next) => {
-  const { userId } = req.body;
+  const { userId, limit, offset } = req.body;
+  
+  if (limit < 0 || offset < 0) {
+    return res.status(400).json({
+      message: 'Bad request'
+    });
+  }
+
   const connection = await getConn();
   try {
     const [rows] = await connection.query(quiz.selectQuiz(userId));
