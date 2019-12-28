@@ -89,4 +89,27 @@ router.post('/create', async (req, res, next) => {
 
 });
 
+/**
+ * 퀴즈 하나 조회
+ */
+router.get('/:quizId', async (req, res, next) => {
+  const { quizId } = req.params;
+  logger.info(quizId)
+  if (!_.isNumber(Number(quizId))) {
+    return res.status(400).json({
+      message: 'Bad request'
+    });
+  }
+
+  const connection = await getConn();
+  try {
+    const [rows] = await connection.query(quiz.selectQuizOne(quizId));
+    connection.release();
+    return res.json(rows);
+  } catch (err) {
+    connection.release();
+    return next(err);
+  }
+});
+
 module.exports = router;
