@@ -94,7 +94,6 @@ router.post('/create', async (req, res, next) => {
  */
 router.get('/:quizId', async (req, res, next) => {
   const { quizId } = req.params;
-  logger.info(quizId)
   if (!_.isNumber(Number(quizId))) {
     return res.status(400).json({
       message: 'Bad request'
