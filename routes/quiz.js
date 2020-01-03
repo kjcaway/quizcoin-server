@@ -28,7 +28,7 @@ router.post('/mylist', async (req, res, next) => {
  */
 router.post('/list', async (req, res, next) => {
   const { userId, limit, offset } = req.body;
-  
+
   if (limit < 0 || offset < 0) {
     return res.status(400).json({
       message: 'Bad request'
@@ -52,7 +52,7 @@ router.post('/list', async (req, res, next) => {
 router.post('/create', async (req, res, next) => {
   const { question, answer, questionType, multiAnswerItems } = req.body;
   const userId = req.decoded.userId;
-  
+
   const connection = await getConn();
   try {
     const data = {
@@ -65,16 +65,16 @@ router.post('/create', async (req, res, next) => {
     };
     await connection.beginTransaction();
     const [results] = await connection.query(quiz.insertQuiz(data));
-    if(questionType === 1){
+    if (questionType === 1) {
       // 객관식
       const quizId = results.insertId;
-      multiAnswerItems.forEach(async (item) => {
+      multiAnswerItems.forEach(async item => {
         const itemData = {
-          quiz_id : quizId,
+          quiz_id: quizId,
           item: item
-        }
+        };
         await connection.query(quiz.insertQuizItem(itemData));
-      })
+      });
     }
     await connection.commit();
     connection.release();
@@ -82,11 +82,39 @@ router.post('/create', async (req, res, next) => {
       success: true
     });
   } catch (err) {
-    await connection.rollback(); 
+    await connection.rollback();
     connection.release();
     return next(err);
   }
+});
 
+/**
+ * 퀴즈 삭제
+ */
+router.post('/remove', async (req, res, next) => {
+  const { quizId } = req.body;
+  const userId = req.decoded.userId;
+
+  const connection = await getConn();
+  try {
+    await connection.beginTransaction();
+    const [rows] = await connection.query(quiz.selectQuizOne(quizId));
+    const rowsUserId = rows[0].user_id;
+    if (rowsUserId !== userId) {
+      throw Error('Unauthorized');
+    }
+    await connection.query(quiz.updateToDeleteQuiz(quizId));
+    await connection.query(quiz.deleteDeleteQuizItem(quizId));
+    await connection.commit();
+    connection.release();
+    return res.json({
+      success: true
+    });
+  } catch (err) {
+    await connection.rollback();
+    connection.release();
+    return next(err);
+  }
 });
 
 /**

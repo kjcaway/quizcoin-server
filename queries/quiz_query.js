@@ -40,6 +40,10 @@ function selectQuizOne(quizId) {
   `;
 }
 
+/**
+ * 본인 퀴즈 조회
+ * @param {*} userId 
+ */
 function selectQuizWithAnswer(userId) {
   // let where = '';
   // _.forIn(whereJson, (value, key) => {
@@ -58,7 +62,7 @@ function selectQuizWithAnswer(userId) {
     created_time,
     ifnull((select group_concat(item SEPARATOR ',') from QUIZ_ITEM where quiz_id = Q.quiz_id group by quiz_id), '') as items
   FROM
-    QUIZ Q WHERE 1=1 AND user_id = '${userId}'
+    QUIZ Q WHERE 1=1 AND user_id = '${userId}' AND del_yn = 'N'
   ORDER BY 
     created_time desc
   `;
@@ -79,10 +83,25 @@ function insertQuizItem(data) {
   `;
 }
 
+function updateToDeleteQuiz(quizId) {
+  return `
+  UPDATE QUIZ SET del_yn = 'Y' WHERE quiz_id = '${quizId}'
+  `
+}
+
+function deleteDeleteQuizItem(quizId) {
+  return `
+  DELETE FROM QUIZ_ITEM WHERE quiz_id = '${quizId}'
+  `
+}
+
+
 module.exports = {
   selectQuiz,
   selectQuizOne,
   selectQuizWithAnswer,
   insertQuiz,
-  insertQuizItem
+  insertQuizItem,
+  updateToDeleteQuiz,
+  deleteDeleteQuizItem
 };

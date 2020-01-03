@@ -10,7 +10,7 @@ function selectUser(userId = '') {
           US.lastlogin_time,
           ifnull(SC.score, 0) as score,
           ifnull(SC.popular, 0) as popular,
-          (select count(*) from QUIZ where user_id = US.user_id) as quizcnt,
+          (select count(*) from QUIZ where user_id = US.user_id AND del_yn = 'N') as quizcnt,
           ifnull((select group_concat(tag_name SEPARATOR ',') from TAGS where user_id = US.user_id group by user_id), '') as tags
       FROM
           USER US LEFT OUTER JOIN SCORE SC ON SC.user_id = US.user_id
@@ -26,7 +26,7 @@ function selectUser(userId = '') {
           US.lastlogin_time,
           ifnull(SC.score, 0) as score,
           ifnull(SC.popular, 0) as popular,
-          (select count(*) from QUIZ where user_id = US.user_id) as quizcnt,
+          (select count(*) from QUIZ where user_id = US.user_id AND del_yn = 'N') as quizcnt,
           ifnull((select group_concat(tag_name SEPARATOR ',') from TAGS where user_id = US.user_id group by user_id), '') as tags
       FROM
           USER US LEFT OUTER JOIN SCORE SC ON SC.user_id = US.user_id
