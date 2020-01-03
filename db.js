@@ -6,15 +6,15 @@ const pool = mysql.createPool(config.mysql);
 logger.info('Connection pool created.');
 
 pool.on('acquire', function(connection) {
-  logger.info(`Connection ${connection.threadId} acquired`);
+  logger.debug(`Connection ${connection.threadId} acquired`);
 });
 
 pool.on('enqueue', function() {
-  logger.info('Waiting for available connection slot');
+  logger.debug('Waiting for available connection slot');
 });
 
 pool.on('release', function(connection) {
-  logger.info(`Connection ${connection.threadId} released`);
+  logger.debug(`Connection ${connection.threadId} released`);
 });
 
 const getConn = async function() {
