@@ -3,7 +3,9 @@ const _ = require('lodash');
 const moment = require('moment');
 const getConn = require('../db');
 const logger = require('../logger');
-const { quiz } = require('../queries');
+const { replaceStringToCompare } = require('../lib/utils');
+const { SCORE, POPULAR } = require('../lib/constants');
+const { quiz, user } = require('../queries');
 
 const router = express.Router();
 
@@ -134,6 +136,80 @@ router.get('/:quizId', async (req, res, next) => {
     connection.release();
     return res.json(rows);
   } catch (err) {
+    connection.release();
+    return next(err);
+  }
+});
+
+/**
+ * 답안 제출
+ */
+router.post('/answer', async (req, res, next) => {
+  const { quizId, answerSheet } = req.body;
+  const answerUserId = req.decoded.userId;
+
+  if (!_.isNumber(Number(quizId))) {
+    return res.status(400).json({
+      message: 'Bad request'
+    });
+  }
+
+  const connection = await getConn();
+  try {
+    await connection.beginTransaction();
+
+    const [rows] = await connection.query(quiz.selectQuizOneWithAnswer(quizId));
+    const { user_id, answer } = rows[0];
+    const quizUserId = user_id;
+
+    if(quizUserId === answerUserId){
+      // 자신의 문제에 정답입력 불가
+      await connection.rollback();
+      connection.release();
+      return res.status(400).json({
+        message: 'Bad request'
+      });
+    }
+
+    let data = {
+      user_id : answerUserId,
+      quiz_id : quizId,
+      answer_sheet : replaceStringToCompare(answerSheet),
+      score : SCORE.WRONG,
+      created_time: moment().format('YYYY-MM-DD HH:mm:ss')
+    };
+    let isRight = false;
+    if (replaceStringToCompare(answer) === replaceStringToCompare(answerSheet)) {
+      // 정답
+      isRight = true;
+      data.score = SCORE.RIGHT
+    }
+    await connection.query(quiz.createAnswerSheet(data));
+
+    const scoreData = {
+      user_id : answerUserId,
+      score : data.score,
+      update_time : data.created_time
+    }
+    await connection.query(user.upsertScore(scoreData));
+
+    const popularData = {
+      user_id : quizUserId,
+      popular : POPULAR,
+      update_time : data.created_time
+    }
+    await connection.query(user.upsertPopular(popularData));
+    await connection.commit();
+    connection.release();
+
+    return res.json({
+      success: true,
+      isRight: isRight,
+      gettingScore: data.score,
+      rightAnswer: replaceStringToCompare(answer)
+    });
+  } catch (err) {
+    await connection.rollback();
     connection.release();
     return next(err);
   }

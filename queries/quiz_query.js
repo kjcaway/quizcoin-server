@@ -2,7 +2,7 @@ const _ = require('lodash');
 
 function selectQuiz(userId) {
   let term = '';
-  if(userId){
+  if (userId) {
     term = ` AND user_id = "${userId}"`;
   }
   return `
@@ -23,7 +23,7 @@ function selectQuiz(userId) {
 
 function selectQuizOne(quizId) {
   let term = '';
-  if(quizId){
+  if (quizId) {
     term = ` AND quiz_id = "${quizId}"`;
   }
   return `
@@ -42,7 +42,7 @@ function selectQuizOne(quizId) {
 
 /**
  * 본인 퀴즈 조회
- * @param {*} userId 
+ * @param {*} userId
  */
 function selectQuizWithAnswer(userId) {
   // let where = '';
@@ -68,6 +68,19 @@ function selectQuizWithAnswer(userId) {
   `;
 }
 
+function selectQuizOneWithAnswer(quizId) {
+  return `
+  SELECT 
+    quiz_id,
+    user_id,
+    question,
+    answer
+  FROM
+    QUIZ Q WHERE 
+    quiz_id = "${quizId}"
+  `;
+}
+
 function insertQuiz(data) {
   return `
   INSERT INTO QUIZ (user_id, question, answer, question_type, del_yn, created_time)
@@ -86,22 +99,30 @@ function insertQuizItem(data) {
 function updateToDeleteQuiz(quizId) {
   return `
   UPDATE QUIZ SET del_yn = 'Y' WHERE quiz_id = '${quizId}'
-  `
+  `;
 }
 
 function deleteDeleteQuizItem(quizId) {
   return `
   DELETE FROM QUIZ_ITEM WHERE quiz_id = '${quizId}'
-  `
+  `;
 }
 
+function createAnswerSheet(data) {
+  return `
+  INSERT INTO QUIZ_ANSWER (user_id, quiz_id, answer_sheet, score, created_time)
+  VALUES ('${data.user_id}', '${data.quiz_id}', '${data.answer_sheet}', '${data.score}', '${data.created_time}')
+  `;
+}
 
 module.exports = {
   selectQuiz,
   selectQuizOne,
   selectQuizWithAnswer,
+  selectQuizOneWithAnswer,
   insertQuiz,
   insertQuizItem,
   updateToDeleteQuiz,
-  deleteDeleteQuizItem
+  deleteDeleteQuizItem,
+  createAnswerSheet
 };

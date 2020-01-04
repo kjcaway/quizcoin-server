@@ -47,8 +47,29 @@ function updateProfile(file_path, user_id) {
     UPDATE USER SET profile = '${file_path}' WHERE user_id = '${user_id}'
   `
 }
+
+function upsertScore(data) {
+  return `
+    INSERT INTO SCORE (user_id, score, update_time)
+    VALUES ('${data.user_id}', '${data.score}', '${data.update_time}')
+    ON DUPLICATE KEY UPDATE
+    score = score + '${data.score}', update_time = '${data.update_time}'
+  `
+}
+
+function upsertPopular(data) {
+  return `
+    INSERT INTO SCORE (user_id, popular, update_time)
+    VALUES ('${data.user_id}', '${data.popular}', '${data.update_time}')
+    ON DUPLICATE KEY UPDATE
+    popular = popular + '${data.popular}', update_time = '${data.update_time}'
+  `
+}
+
 module.exports = {
   selectUser,
   insertUser,
-  updateProfile
+  updateProfile,
+  upsertScore,
+  upsertPopular
 };
