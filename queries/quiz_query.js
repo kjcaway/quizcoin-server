@@ -108,11 +108,49 @@ function deleteDeleteQuizItem(quizId) {
   `;
 }
 
-function createAnswerSheet(data) {
+function upsertQuizAnswer(data) {
   return `
   INSERT INTO QUIZ_ANSWER (user_id, quiz_id, answer_sheet, score, created_time)
   VALUES ('${data.user_id}', '${data.quiz_id}', '${data.answer_sheet}', '${data.score}', '${data.created_time}')
+  ON DUPLICATE KEY UPDATE
+    answer_sheet = '${data.answer_sheet}', 
+    score = '${data.score}',
+    created_time = '${data.created_time}'
   `;
+}
+
+function insertQuizAnswerLog(data) {
+  return `
+  INSERT INTO QUIZ_ANSWER_LOG (user_id, quiz_id, try_cnt, answer_sheet, created_time)
+  VALUES ('${data.user_id}', '${data.quiz_id}', '${data.try_cnt}', '${data.answer_sheet}', '${data.created_time}')
+  `;
+}
+
+function selectTryCnt(data) {
+  return `
+  SELECT 
+    QAL.answer_sheet AS last_answer_sheet, QAL.try_cnt AS try_cnt
+  FROM
+      QUIZ_ANSWER_LOG QAL
+          INNER JOIN
+      (SELECT 
+          IFNULL(MAX(try_cnt), 0) AS try_cnt
+      FROM
+          QUIZ_ANSWER_LOG
+      WHERE
+          user_id = '${data.user_id}' AND quiz_id = '${data.quiz_id}') TR ON TR.try_cnt = QAL.try_cnt
+          AND user_id = '${data.user_id}'
+          AND quiz_id = '${data.quiz_id}'
+  `
+}
+
+function selectQuizAnswer(userId) {
+  return `
+  SELECT
+    user_id, quiz_id, answer_sheet, score
+  FROM QUIZ_ANSWER
+  WHERE user_id = '${userId}'
+  `
 }
 
 module.exports = {
@@ -124,5 +162,8 @@ module.exports = {
   insertQuizItem,
   updateToDeleteQuiz,
   deleteDeleteQuizItem,
-  createAnswerSheet
+  upsertQuizAnswer,
+  insertQuizAnswerLog,
+  selectTryCnt,
+  selectQuizAnswer
 };
