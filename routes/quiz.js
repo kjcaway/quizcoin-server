@@ -256,8 +256,7 @@ router.post('/answer', async (req, res, next) => {
  */
 router.post('/myQuizAnswer', async (req, res, next) => {
   const userId = req.decoded.userId;
-
-  logger.info(userId)
+  
   const connection = await getConn();
   try {
     const [rows] = await connection.query(quiz.selectQuizAnswer(userId));

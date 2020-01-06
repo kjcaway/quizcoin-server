@@ -30,6 +30,7 @@ function selectUser(userId = '') {
           ifnull((select group_concat(tag_name SEPARATOR ',') from TAGS where user_id = US.user_id group by user_id), '') as tags
       FROM
           USER US LEFT OUTER JOIN SCORE SC ON SC.user_id = US.user_id
+      ORDER BY SC.score DESC
     `;
   }
 }
