@@ -10,7 +10,7 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
 
 const options = {
   file: {
-    level: 'warn',
+    level: 'info',
     filename: `${appRoot}/logs/express_server.log`,
     handleExceptions: true,
     json: false,
@@ -30,19 +30,20 @@ const options = {
 
 let logger = new winston.createLogger({
   transports: [
-    // new winston.transports.File(options.file)
   ],
   exitOnError: false // do not exit on handled exceptions
 });
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV === 'production') {
+  logger.add(new winston.transports.File(options.file));
+} else {
   logger.add(new winston.transports.Console(options.console));
 }
 
-logger.stream = {
-  write: function(message, encoding) {
-    logger.info(message);
-  }
-};
+// logger.stream = {
+//   write: function(message, encoding) {
+//     logger.info(message);
+//   }
+// };
 
 module.exports = logger;

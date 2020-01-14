@@ -12,6 +12,7 @@
 
 # production
 /build/config.js
+/logs
 
 # misc
 .DS_Store
