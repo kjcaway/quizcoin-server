@@ -61,6 +61,14 @@ router.post('/signup', async (req, res, next) => {
       created_time: moment().format('YYYY-MM-DD HH:mm:ss'),
       lastlogin_time: ''
     };
+
+    const [rows] = await connection.query(user.selectUser(userId));
+    if(_.get(rows[0], 'user_id', '') === userId){
+      return res.status(409).json({
+        message: 'Conflict'
+      });
+    }
+
     await connection.beginTransaction(); // START TRANSACTION
     await connection.query(user.insertUser(data));
     await connection.commit(); // COMMIT
@@ -93,7 +101,7 @@ router.post('/signin', async (req, res, next) => {
     const [rows] = await connection.query(user.selectUser(userId));
     connection.release();
     if (_.isEmpty(rows)) {
-      return res.status(401).json({
+      return res.status(404).json({
         message: 'Wrong userid'
       });
     }
